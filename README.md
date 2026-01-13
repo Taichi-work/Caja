@@ -1,59 +1,60 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Caja (カハ) - Simple & Secure File Sharing Service
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Caja（スペイン語で「箱」）は、シンプルながらも実用的な機能を備えた、個人・少人数向けのファイルストレージ・共有サービスです。Dropboxのような直感的な操作性と、安全なデータ管理機能をLaravelで実装しました。
 
-## About Laravel
+## 🚀 特徴・細部へのこだわり
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. **24時間限定の共有リンクシステム**
+   特定のファイルに対して、ログイン不要でアクセス可能な専用URLをワンクリックで発行します。24時間の有効期限を設定しており、期限切れ後は自動的にアクセスを遮断。セキュリティと利便性を両立させました。
+2. **「ゴミ箱」機能を備えた論理削除の実装**
+   誤削除によるデータ消失を防ぐため、物理削除ではなく「Soft Deletes（論理削除）」を採用。ゴミ箱画面から、ワンタップで元の場所へ復元できる安心設計です。
+3. **直感的な「情報集約型」UI/UX**
+   ファイル名、アップロード日時、所有者を一画面に整理。長いファイル名の省略表示（...処理）や、クリック時のURL自動選択など、細かなUXの向上を追求しています。
+4. **大容量ファイル対応（100MB）**
+   Laravelのバリデーションに加え、サーバー側（PHP）の設定最適化を行い、最大100MBまでの高画質画像やドキュメントのアップロードに対応させました。
+5. **マルチユーザー認可セキュリティ**
+   同じアプリ内でも、自分以外のユーザーのファイルをダウンロード、編集、削除することはできません。URLの直接入力に対しても厳格な認可チェックを行っています。
+   
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🏗 エンジニア視点の設計解説
+本アプリはWeb開発の基本である**MVCモデル**と**CRUD処理**を忠実に守り、初学者の方にも構造がわかりやすい設計を心がけました。
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. MVCモデルの役割分担
+- **Model (M):** `File.php`
+  - データベースとのやり取りを担当。論理削除（SoftDeletes）や、共有期限の判定ロジックを持たせています。
+- **View (V):** `index.blade.php`, `shared.blade.php` 等
+  - ユーザーが見る画面。Tailwind CSSを用い、データの状態（共有中か、期限切れか）に応じて表示を動的に切り替えます。
+- **Controller (C):** `FileController.php`
+  - ユーザーの要求（アップロードや削除）を受け取り、Modelに指示を出して結果をViewに返します。
 
-## Laravel Sponsors
+### 2. CRUDの実装
+Webアプリケーションの基本4操作を網羅しています。
+- **Create:** 新しいファイルのアップロード・保存
+- **Read:** ファイル一覧の表示、および共有リンクを介した閲覧
+- **Update:** ファイル名の編集、および共有リンクの再発行
+- **Delete:** ゴミ箱への移動（論理削除）および完全削除（物理削除）
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 📖 開発で使用した主なLaravelメソッド
+- `store()` : ファイルを指定ディレクトリに安全に保存
+- `validate()` : 容量や形式をフロント・バック両面でチェック
+- `onlyTrashed()` / `restore()` : ゴミ箱機能の制御
+- `Str::random(32)` : 推測不可能な共有トークンの生成
+- `now()->addHours(24)` : 直感的な有効期限の計算
 
-### Premium Partners
+## 🛠 使用技術
+- **Backend:** PHP 8.x / Laravel 11.x
+- **Frontend:** Tailwind CSS / Blade (Laravel Template Engine) / JavaScript
+- **Database:** MySQL
+- **Environment:** Laravel Sail (Docker)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 💻 使い方
+1. **ログイン/登録:** Breezeによる認証機能からアカウントを作成。
+2. **アップロード:** トップ画面からファイルを選択してアップロード。
+3. **共有:** ファイル横の「リンク発行」を押すとURLが生成されます。そのURLをシークレットブラウザ等で開くと、ログインなしでダウンロード可能です。
+4. **管理:** 不要なファイルはゴミ箱へ。必要に応じて復元や完全削除を行えます。
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+Created with passion for clean code and user experience.
